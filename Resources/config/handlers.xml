@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <parameters>
+        <parameter key="fantoine_translation_extractor.handler.file.class">Fantoine\TranslationExtractorBundle\Translation\Factory\Handler\FileHandler</parameter>
+        <parameter key="fantoine_translation_extractor.handler.namespace.class">Fantoine\TranslationExtractorBundle\Translation\Factory\Handler\NamespaceHandler</parameter>
+    </parameters>
+    <services>
+        <service id="fantoine_translation_extractor.handler.file" class="%fantoine_translation_extractor.handler.file.class%">
+            <tag name="fantoine_translation_extractor.factory_handler" alias="file" />
+        </service>
+        <service id="fantoine_translation_extractor.handler.namespace" class="%fantoine_translation_extractor.handler.namespace.class%">
+            <tag name="fantoine_translation_extractor.factory_handler" alias="namespace" />
+        </service>
+    </services>
+</container>
