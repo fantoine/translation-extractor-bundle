@@ -18,12 +18,12 @@ class FactoryHandlerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        if (!$container->hasDefinition('fantoine_translation_extractor.manager.visitor')) {
+        if (!$container->hasDefinition('fantoine_translation_extractor.generator.visitor')) {
             return;
         }
 
         $definition = $container->getDefinition(
-            'fantoine_translation_extractor.manager.visitor'
+            'fantoine_translation_extractor.generator.visitor'
         );
         
         $taggedServices = $container->findTaggedServiceIds(
