@@ -142,7 +142,7 @@ class VisitorGenerator
             if (null === $lastExpression) {
                 $lastExpression = $expression;
             } else {
-                $lastExpression = new \PHPParser_Node_Expr_LogicalAnd(
+                $lastExpression = new \PHPParser_Node_Expr_BooleanAnd(
                     $lastExpression,
                     $expression
                 );
@@ -174,81 +174,10 @@ class VisitorGenerator
         $enterStmts = [];
         $leaveStmts = [];
         
-        foreach ($builder->children() as $child) {
-            $service  = $child->extractedBy();
-            if (null === $service) {
-                continue;
-            }
-            
-            // Get handler service
-            if (!$this->hasHandler($service)) {
-                throw new \LogicException(sprintf('The handler service "%s" does not exists.', $service));
-            }
-            $handler  = $this->getHandler($service);
-            
-            // Get validation condition
-            $validationCondition = null;
-            $statements = $handler->createExtractionValidation($child);
-            if (null !== $statements) {    
-                // Prepare method
-                $methodName = 'enterNode_' . $child->getHash();
-                $method     = $factory
-                    ->method($methodName)
-                    ->addParam($factory->param('node')->setTypeHint($builder->getAstClass()))
-                    ->addStmts(is_array($statements) ? $statements : [$statements])
-                ;
-
-                // Prepare condition expression: $this->enterNode_<...>($node)
-                $validationCondition = new \PHPParser_Node_Expr_MethodCall(
-                    new \PHPParser_Node_Expr_Variable('this'),
-                    $methodName,
-                    [ new \PHPParser_Node_Arg(new \PHPParser_Node_Expr_Variable('node')) ]
-                );
-            
-                $stmts[] = $method;
-            }
-            
-            // Get AST condition
-            $astClass = $handler->getAstClass($child);
-            $astCondition = null;
-            if (null !== $astClass) {
-                $astCondition = new \PHPParser_Node_Expr_Instanceof(
-                    new \PHPParser_Node_Expr_Variable('node'),
-                    new \PHPParser_Node_Name($astClass)
-                );
-            }
-            
-            // Prepare final condition
-            $enterCondition = (null !== $astCondition && null !== $validationCondition ?
-                new \PHPParser_Node_Expr_LogicalAnd($astCondition, $validationCondition) :
-                $astCondition ?: $validationCondition
-            );
-            
-            // Prepare addState statement
-            $addState = new \PHPParser_Node_Expr_MethodCall(
-                new \PHPParser_Node_Expr_Variable('this'),
-                'addState',
-                [ new \PHPParser_Node_Arg(new \PHPParser_Node_Scalar_String($child->getHash())) ]
-            );
-            
-            // Prepare removeState statement
-            $removeState = new \PHPParser_Node_Expr_MethodCall(
-                new \PHPParser_Node_Expr_Variable('this'),
-                'removeState',
-                [ new \PHPParser_Node_Arg(new \PHPParser_Node_Scalar_String($child->getHash())) ]
-            );
-            
-            // Add enter condition
-            $enterStmts[] = (null !== $enterCondition ?
-                new \PHPParser_Node_Stmt_If($enterCondition, [ 'stmts' => [$addState] ]) :
-                $addState
-            );
-            
-            // Add remove condition
-            if (null !== $astCondition) {
-                $leaveStmts[] = new \PHPParser_Node_Stmt_If($astCondition, [ 'stmts' => [$removeState] ]);
-            }
-        }
+        // Extract statements
+        $this->recursiveCreateExtraction(
+            $builder, $builder, $factory, $stmts, $enterStmts, $leaveStmts
+        );
         
         // If there is extraction to do, add methods
         if (count($enterStmts) >= 0) {
@@ -281,6 +210,104 @@ class VisitorGenerator
         }
         
         return $stmts;
+    }
+    
+    /**
+     * @param FactoryInterface $builder
+     * @param \PHPParser_BuilderFactory $factory
+     * @param array $stmts
+     * @param array $enterStmts
+     * @param array $leaveStmts
+     * @throws \LogicException
+     */
+    protected function recursiveCreateExtraction(
+        BuilderInterface $builder,
+        FactoryInterface $target,
+        \PHPParser_BuilderFactory $factory,
+        array &$stmts,
+        array &$enterStmts,
+        array &$leaveStmts)
+    {
+        foreach ($target->children() as $child) {
+            $service  = $child->extractedBy();
+            if (null === $service) {
+                continue;
+            }
+            
+            // Get handler service
+            if (!$this->hasHandler($service)) {
+                throw new \LogicException(sprintf('The handler service "%s" does not exists.', $service));
+            }
+            $handler  = $this->getHandler($service);
+            
+            // Get validation condition
+            $validationCondition = null;
+            $statements = $handler->createExtractionValidation($child, '$node');
+            if (null !== $statements) {    
+                // Prepare method
+                $methodName = 'enterNode_' . $child->getHash();
+                $method     = $factory
+                    ->method($methodName)
+                    ->addParam($factory->param('node')->setTypeHint($builder->getAstClass()))
+                    ->addStmts(is_array($statements) ? $statements : [$statements])
+                ;
+
+                // Prepare condition expression: $this->enterNode_<...>($node)
+                $validationCondition = new \PHPParser_Node_Expr_MethodCall(
+                    new \PHPParser_Node_Expr_Variable('this'),
+                    $methodName,
+                    [ new \PHPParser_Node_Arg(new \PHPParser_Node_Expr_Variable('node')) ]
+                );
+            
+                $stmts[] = $method;
+            }
+            
+            // Get AST condition
+            $astClass = $handler->getAstClass($child);
+            $astCondition = null;
+            if (null !== $astClass) {
+                $astCondition = new \PHPParser_Node_Expr_Instanceof(
+                    new \PHPParser_Node_Expr_Variable('node'),
+                    new \PHPParser_Node_Name($astClass)
+                );
+            }
+            
+            // Prepare final condition
+            $enterCondition = (null !== $astCondition && null !== $validationCondition ?
+                new \PHPParser_Node_Expr_BooleanAnd($astCondition, $validationCondition) :
+                $astCondition ?: $validationCondition
+            );
+            
+            // Prepare addState statement
+            $addState = new \PHPParser_Node_Expr_MethodCall(
+                new \PHPParser_Node_Expr_Variable('this'),
+                'addState',
+                [ new \PHPParser_Node_Arg(new \PHPParser_Node_Scalar_String($child->getHash())) ]
+            );
+            
+            // Prepare removeState statement
+            $removeState = new \PHPParser_Node_Expr_MethodCall(
+                new \PHPParser_Node_Expr_Variable('this'),
+                'removeState',
+                [ new \PHPParser_Node_Arg(new \PHPParser_Node_Scalar_String($child->getHash())) ]
+            );
+            
+            // Add enter condition
+            $enterStmts[] = (null !== $enterCondition ?
+                new \PHPParser_Node_Stmt_If($enterCondition, [ 'stmts' => [$addState] ]) :
+                $addState
+            );
+            
+            // Add remove condition
+            if (null !== $astCondition) {
+                $leaveStmts[] = new \PHPParser_Node_Stmt_If($astCondition, [ 'stmts' => [$removeState] ]);
+            }
+            
+            // Call on children
+            $this->recursiveCreateExtraction(
+                $builder, $child, $factory, $stmts, $enterStmts, $leaveStmts
+            );
+        }
     }
     
     /**

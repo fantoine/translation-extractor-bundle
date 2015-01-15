@@ -4,6 +4,7 @@ namespace Fantoine\TranslationExtractorBundle\Translation\Builder;
 
 use Fantoine\TranslationExtractorBundle\Translation\Factory\FileFactory;
 use Fantoine\TranslationExtractorBundle\Translation\Factory\NamespaceFactory;
+use Fantoine\TranslationExtractorBundle\Translation\Factory\ClassFactory;
 
 /**
  * Description of PhpBuilder
@@ -53,11 +54,24 @@ class PhpBuilder extends AbstractBuilder
      * @param string $namespace
      * @return NamespaceFactory
      */
-    public function namespace_($namespace = null)
+    public function namespaceFactory($namespace = null)
     {
         $factory = new NamespaceFactory($this);
         if (null !== $namespace) {
             $factory->in($namespace);
+        }
+        return $factory;
+    }
+    
+    /**
+     * @param string $instanceOf
+     * @return ClassFactory
+     */
+    public function classFactory($instanceOf = null)
+    {
+        $factory = new ClassFactory($this);
+        if (null !== $instanceOf) {
+            $factory->subclass($instanceOf);
         }
         return $factory;
     }
@@ -70,10 +84,10 @@ class PhpBuilder extends AbstractBuilder
      */
     public function __call($name, array $arguments)
     {
-        $escaped = ['namespace'];
+        $escaped = ['namespace', 'class'];
         
         if (in_array($name, $escaped)) {
-            return call_user_func_array([$this, $name.'_'], $arguments);
+            return call_user_func_array([$this, $name.'Factory'], $arguments);
         }
         
         throw new \LogicException(sprintf('Method "%s" does not exist on PhpBuilder', $name));

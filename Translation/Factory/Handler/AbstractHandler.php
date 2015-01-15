@@ -31,9 +31,10 @@ class AbstractHandler implements HandlerInterface
     
     /**
      * @param FactoryInterface $factory
+     * @param string $nodeAlias
      * @return \PHPParser_Node_Stmt|array|null
      */
-    public function createExtractionValidation(FactoryInterface $factory)
+    public function createExtractionValidation(FactoryInterface $factory, $nodeAlias)
     {
         return null;
     }
@@ -65,7 +66,15 @@ class AbstractHandler implements HandlerInterface
         }
         
         // Get statements
-        return $parser->parse(new \PHPParser_Lexer(sprintf('<?php %s', $code)));
+        try {
+            return $parser->parse(new \PHPParser_Lexer(sprintf('<?php %s', $code)));
+        } catch(\PHPParser_Error $e) {
+            throw new \Exception(
+                sprintf("%s :\n%s", $e->getMessage(), $code),
+                0,
+                null
+            );
+        }
     }
     
     /**
@@ -75,8 +84,17 @@ class AbstractHandler implements HandlerInterface
     protected function escapeStringArray(array $values)
     {
         return array_map(
-            function ($value) { return sprintf('"%s"', $value); },
+            function ($value) { return $this->escapeString($value); },
             $values
         );
+    }
+    
+    /**
+     * @param string $value
+     * @return string
+     */
+    protected function escapeString($value)
+    {
+        return sprintf('"%s"', str_replace('"', '\\"', (string) $value));
     }
 }

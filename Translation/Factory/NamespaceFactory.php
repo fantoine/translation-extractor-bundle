@@ -24,7 +24,6 @@ class NamespaceFactory extends AbstractFactory
     public function in($namespace, $andChildren = true)
     {
         $this->namespace = [];
-        
         return $this->orIn($namespace, $andChildren);
     }
     

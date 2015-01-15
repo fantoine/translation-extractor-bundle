@@ -26,7 +26,8 @@ interface HandlerInterface
     
     /**
      * @param FactoryInterface $factory
+     * @param string $nodeAlias
      * @return \PHPParser_Node_Stmt|array|null
      */
-    public function createExtractionValidation(FactoryInterface $factory);
+    public function createExtractionValidation(FactoryInterface $factory, $nodeAlias);
 }

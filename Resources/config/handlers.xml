@@ -5,6 +5,7 @@
     <parameters>
         <parameter key="fantoine_translation_extractor.handler.file.class">Fantoine\TranslationExtractorBundle\Translation\Factory\Handler\FileHandler</parameter>
         <parameter key="fantoine_translation_extractor.handler.namespace.class">Fantoine\TranslationExtractorBundle\Translation\Factory\Handler\NamespaceHandler</parameter>
+        <parameter key="fantoine_translation_extractor.handler.class.class">Fantoine\TranslationExtractorBundle\Translation\Factory\Handler\ClassHandler</parameter>
     </parameters>
     <services>
         <service id="fantoine_translation_extractor.handler.file" class="%fantoine_translation_extractor.handler.file.class%">
@@ -12,6 +13,9 @@
         </service>
         <service id="fantoine_translation_extractor.handler.namespace" class="%fantoine_translation_extractor.handler.namespace.class%">
             <tag name="fantoine_translation_extractor.factory_handler" alias="namespace" />
+        </service>
+        <service id="fantoine_translation_extractor.handler.class" class="%fantoine_translation_extractor.handler.class.class%">
+            <tag name="fantoine_translation_extractor.factory_handler" alias="class" />
         </service>
     </services>
 </container>
