@@ -27,6 +27,11 @@ class ClassFactory extends AbstractFactory
     protected $implement = [];
     
     /**
+     * @var array Array of possible used traits
+     */
+    protected $use = [];
+    
+    /**
      * @param string $class
      * @return ClassFactory
      */
@@ -87,6 +92,26 @@ class ClassFactory extends AbstractFactory
     }
     
     /**
+     * @param string $class
+     * @return ClassFactory
+     */
+    public function uses($class)
+    {
+        $this->use = [];
+        return $this->orUses($class);
+    }
+    
+    /**
+     * @param string $class
+     * @return ClassFactory
+     */
+    public function orUses($class)
+    {
+        $this->use[] = $class;
+        return $this;
+    }
+    
+    /**
      * @return array
      */
     public function getSubclasses()
@@ -108,6 +133,14 @@ class ClassFactory extends AbstractFactory
     public function getImplements()
     {
         return $this->implement;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getUses()
+    {
+        return $this->use;
     }
     
     /**

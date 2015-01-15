@@ -93,6 +93,19 @@ class ClassHandler extends AbstractHandler
                 implode(', $parentInterfaces) && !in_array(', $this->escapeStringArray($implements))
             );
         }
+        
+        $uses = $factory->getUses();
+        if (count($uses) > 0) {
+            $code .= sprintf('
+                // Check used traits
+                $traits = class_uses($className);
+                if (!in_array(%s, $traits)) {
+                    return false;
+                }
+                ',
+                implode(', $traits) && !in_array(', $this->escapeStringArray($uses))
+            );
+        }
     
         // Final return
         $code .= 'return true;';
