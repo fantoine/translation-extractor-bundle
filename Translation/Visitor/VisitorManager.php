@@ -3,8 +3,6 @@
 namespace Fantoine\TranslationExtractorBundle\Translation\Visitor;
 
 use Fantoine\TranslationExtractorBundle\Translation\Builder\BuilderInterface;
-use Fantoine\TranslationExtractorBundle\Translation\Factory\FactoryInterface;
-use Fantoine\TranslationExtractorBundle\Translation\Factory\Handler\HandlerInterface;
 use JMS\TranslationBundle\Model\MessageCatalogue;
 use Symfony\Component\Filesystem\Filesystem;
 

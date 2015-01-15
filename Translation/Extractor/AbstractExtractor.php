@@ -4,9 +4,6 @@ namespace Fantoine\TranslationExtractorBundle\Translation\Extractor;
 
 use Fantoine\TranslationExtractorBundle\Translation\Builder\PhpBuilder;
 use Fantoine\TranslationExtractorBundle\Translation\Builder\TwigBuilder;
-use Fantoine\TranslationExtractorBundle\Translation\Visitor\PhpVisitor;
-use Fantoine\TranslationExtractorBundle\Translation\Visitor\TwigVisitor;
-use Fantoine\TranslationExtractorBundle\Translation\Visitor\VisitorInterface;
 use Fantoine\TranslationExtractorBundle\Translation\Visitor\VisitorManager;
 use JMS\TranslationBundle\Model\MessageCatalogue;
 use JMS\TranslationBundle\Translation\Extractor\FileVisitorInterface;
